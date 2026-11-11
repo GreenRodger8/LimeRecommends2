@@ -7,6 +7,7 @@ import { Greeting } from './components/Greeting';
 import { redirectToAuthCodeFlow, getAccessToken } from './util/authCodeFlow';
 import { UserProfileCard } from './components/UserProfileCard';
 import { UserTopArtists } from './components/UserTopArtists';
+import { UserTopTracks } from './components/UserTopTracks';
 import { useState, useEffect } from 'react';
 
 function App() {
@@ -63,6 +64,15 @@ function App() {
                 <Col>
                     {accessResponse ? (
                         <UserTopArtists token={accessResponse}></UserTopArtists>
+                    ) : (
+                        <></>
+                    )}
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                    {accessResponse ? (
+                        <UserTopTracks token={accessResponse}></UserTopTracks>
                     ) : (
                         <></>
                     )}
