@@ -1,26 +1,24 @@
-import { useCallback, useEffect, useState } from 'react';
-import { AddItemForm } from './AddNewItemForm';
-import { ItemDisplay } from './ItemDisplay';
-import PropTypes from 'prop-types';
+import { useEffect, useState } from 'react';
+import { ArtistObject } from '../util/spotifyTypes';
 
-function ArtistCard({ link, images, name, uri }) {
+function ArtistCard({ artist }: { artist: ArtistObject }) {
     return (
         <>
             <ul>
                 <li>
-                    <a id="url" href={link}>
-                        {link}
+                    <a id="url" href={artist.external_urls.spotify}>
+                        {artist.external_urls.spotify}
                     </a>
                 </li>
-                {images.map((image) => (
+                {artist.images?.map((image) => (
                     <li>
                         <img src={image.url}></img>
                     </li>
                 ))}
-                <li>{name}</li>
+                <li>{artist.name}</li>
                 <li>
-                    <a id="url" href={uri}>
-                        {uri}
+                    <a id="url" href={artist.uri}>
+                        {artist.uri}
                     </a>
                 </li>
             </ul>
@@ -28,15 +26,8 @@ function ArtistCard({ link, images, name, uri }) {
     );
 }
 
-ArtistCard.propTypes = {
-    link: PropTypes.string,
-    images: PropTypes.array,
-    name: PropTypes.string,
-    uri: PropTypes.string,
-};
-
-export function UserTopArtists({ token }) {
-    const [artistList, setArtistList] = useState(null);
+export function UserTopArtists({ token }: { token: string }) {
+    const [artistList, setArtistList] = useState<ArtistObject[] | null>(null);
 
     useEffect(() => {
         if (token && !artistList) {
@@ -60,13 +51,8 @@ export function UserTopArtists({ token }) {
         <>
             {artistList ? (
                 <>
-                    {artistList.map((artist) => (
-                        <ArtistCard
-                            link={artist.external_urls.spotify}
-                            images={artist.images}
-                            name={artist.name}
-                            uri={artist.uri}
-                        />
+                    {artistList.map((artist: ArtistObject) => (
+                        <ArtistCard artist={artist} />
                     ))}
                 </>
             ) : (
@@ -75,7 +61,3 @@ export function UserTopArtists({ token }) {
         </>
     );
 }
-
-UserTopArtists.propTypes = {
-    token: PropTypes.string,
-};

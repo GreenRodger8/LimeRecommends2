@@ -1,10 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
-import { AddItemForm } from './AddNewItemForm';
-import { ItemDisplay } from './ItemDisplay';
-import PropTypes from 'prop-types';
+import { useEffect, useState } from 'react';
+import { ProfileObject } from '../util/spotifyTypes';
 
-export function UserProfileCard({ token }) {
-    const [profile, setProfile] = useState(null);
+export function UserProfileCard({ token }: { token: string }) {
+    const [profile, setProfile] = useState<ProfileObject | null>(null);
 
     useEffect(() => {
         if (token && !profile) {
@@ -33,7 +31,6 @@ export function UserProfileCard({ token }) {
                         ></img>
                         <ul>
                             <li>User ID: {profile.account_id}</li>
-                            <li>Email: {profile.email}</li>
                             <li>
                                 Spotify URI:{' '}
                                 <a id="uri" href={profile.uri}>
@@ -56,7 +53,3 @@ export function UserProfileCard({ token }) {
         </>
     );
 }
-
-UserProfileCard.propTypes = {
-    token: PropTypes.string,
-};

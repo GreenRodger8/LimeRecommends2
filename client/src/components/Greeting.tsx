@@ -3,7 +3,11 @@ import { useEffect, useState } from 'react';
 import { redirectToAuthCodeFlow } from '../util/authCodeFlow';
 import PropTypes from 'prop-types';
 
-export function Greeting({ onButtonClick }) {
+interface GreetingProps {
+    onButtonClick: () => void;
+}
+
+export function Greeting({ onButtonClick }: GreetingProps) {
     return (
         <>
             <h1 className="text-center mb-5">

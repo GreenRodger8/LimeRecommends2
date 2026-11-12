@@ -1,24 +1,22 @@
-import { useCallback, useEffect, useState } from 'react';
-import { AddItemForm } from './AddNewItemForm';
-import { ItemDisplay } from './ItemDisplay';
-import PropTypes from 'prop-types';
+import { useEffect, useState } from 'react';
+import { TrackObject } from '../util/spotifyTypes';
 
-function TrackCard({ link, image, name, uri }) {
+function TrackCard({ track }: { track: TrackObject }) {
     return (
         <>
             <ul>
                 <li>
-                    <a id="url" href={link}>
-                        {link}
+                    <a id="url" href={track.href}>
+                        {track.href}
                     </a>
                 </li>
                 <li>
-                    <img src={image.url}></img>
+                    <img src={track.album.images[0].url}></img>
                 </li>
-                <li>{name}</li>
+                <li>{track.name}</li>
                 <li>
-                    <a id="url" href={uri}>
-                        {uri}
+                    <a id="url" href={track.uri}>
+                        {track.uri}
                     </a>
                 </li>
             </ul>
@@ -26,15 +24,8 @@ function TrackCard({ link, image, name, uri }) {
     );
 }
 
-TrackCard.propTypes = {
-    link: PropTypes.string,
-    image: PropTypes.string,
-    name: PropTypes.string,
-    uri: PropTypes.string,
-};
-
-export function UserTopTracks({ token }) {
-    const [trackList, setTrackList] = useState(null);
+export function UserTopTracks({ token }: { token: string }) {
+    const [trackList, setTrackList] = useState<TrackObject[] | null>(null);
 
     useEffect(() => {
         if (token && !trackList) {
@@ -59,12 +50,7 @@ export function UserTopTracks({ token }) {
             {trackList ? (
                 <>
                     {trackList.map((track) => (
-                        <TrackCard
-                            link={track.external_urls.spotify}
-                            image={track.album.images[0]}
-                            name={track.name}
-                            uri={track.uri}
-                        />
+                        <TrackCard track={track} />
                     ))}
                 </>
             ) : (
@@ -73,7 +59,3 @@ export function UserTopTracks({ token }) {
         </>
     );
 }
-
-UserTopTracks.propTypes = {
-    token: PropTypes.string,
-};
