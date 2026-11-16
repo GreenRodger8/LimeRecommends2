@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
 import { ProfileObject } from '../util/spotifyTypes';
+import Card from 'react-bootstrap/Card';
+import Container from 'react-bootstrap/esm/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/esm/Col';
+import Image from 'react-bootstrap/Image';
 
 export function UserProfileCard({ token }: { token: string }) {
     const [profile, setProfile] = useState<ProfileObject | null>(null);
@@ -18,38 +23,37 @@ export function UserProfileCard({ token }: { token: string }) {
     //if (items === null) return 'Loading...';
 
     return (
-        <>
-            {profile ? (
-                <>
-                    <h1>Display your Spotify profile data</h1>
-
-                    <section id="profile">
-                        <h2>Logged in as {profile.display_name}</h2>
-                        <img
-                            src={profile.images[0].url}
-                            alt="Profile image"
-                        ></img>
-                        <ul>
-                            <li>User ID: {profile.account_id}</li>
-                            <li>
-                                Spotify URI:{' '}
-                                <a id="uri" href={profile.uri}>
-                                    {profile.uri}
-                                </a>
-                            </li>
-                            <li>
-                                Link:{' '}
-                                <a id="url" href={profile.href}>
-                                    {profile.href}
-                                </a>
-                            </li>
-                            <li>Profile Image: {profile.images[0].url}</li>
-                        </ul>
-                    </section>
-                </>
-            ) : (
-                <h1>Loading profile data...</h1>
-            )}
-        </>
+        <Card>
+            <Card.Body>
+                <Card.Title>Profile</Card.Title>
+                {profile ? (
+                    <Container>
+                        <Row>
+                            <Col md={4}>
+                                <Image src={profile.images[0].url} rounded />
+                            </Col>
+                            <Col md={8}>
+                                <span>{profile.display_name}</span>
+                                <span>User ID: {profile.account_id}</span>
+                                <span>
+                                    Spotify URI:
+                                    <a id="uri" href={profile.uri}>
+                                        {profile.uri}
+                                    </a>
+                                </span>
+                                <span>
+                                    Link:
+                                    <a id="url" href={profile.href}>
+                                        {profile.href}
+                                    </a>
+                                </span>
+                            </Col>
+                        </Row>
+                    </Container>
+                ) : (
+                    <h1>Loading profile data...</h1>
+                )}
+            </Card.Body>
+        </Card>
     );
 }

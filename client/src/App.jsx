@@ -42,7 +42,7 @@ function App() {
                 </Col>
             </Row>
             <Row>
-                <Col md={{ offset: 3, span: 6 }}>
+                <Col md={12}>
                     {accessResponse ? (
                         <UserProfileCard token={accessResponse} />
                     ) : (
