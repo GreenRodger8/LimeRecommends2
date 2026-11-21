@@ -8,6 +8,9 @@ const addItem = require('./routes/addItem');
 const updateItem = require('./routes/updateItem');
 const deleteItem = require('./routes/deleteItem');
 
+const getAllUsers = require('./routes/getAllUsers');
+const addUserProfile = require('./routes/addUserProfile');
+
 app.use(express.json());
 app.use(express.static(__dirname + '/static'));
 
@@ -17,6 +20,9 @@ app.get('/api/random', getRandom);
 app.post('/api/items', addItem);
 app.put('/api/items/:id', updateItem);
 app.delete('/api/items/:id', deleteItem);
+
+app.get('/api/users', getAllUsers);
+app.post('/api/users', addUserProfile);
 
 db.init()
     .then(() => {

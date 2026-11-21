@@ -37,17 +37,87 @@ async function init() {
         charset: 'utf8mb4',
     });
 
-    return new Promise((acc, rej) => {
+    const users = new Promise((acc, rej) => {
         pool.query(
-            'CREATE TABLE IF NOT EXISTS todo_items (id varchar(36), name varchar(255), completed boolean) DEFAULT CHARSET utf8mb4',
+            'CREATE TABLE IF NOT EXISTS users (' +
+                'user_id varchar(36), ' + // account_id in Spotify documentation
+                'display_name varchar(255), ' +
+                'external_urls varchar(255), ' +
+                'img_url varchar(255), ' +
+                'uri varchar(36))',
             (err) => {
                 if (err) return rej(err);
 
-                console.log(`Connected to mysql db at host ${HOST}`);
+                console.log('users table exists');
                 acc();
             },
         );
     });
+
+    const artists = new Promise((acc, rej) => {
+        pool.query(
+            'CREATE TABLE IF NOT EXISTS artists (' +
+                'artist_id varchar(36), ' +
+                'artist_name varchar(72), ' +
+                'external_urls varchar(255), ' +
+                'img_url varchar(255), ' +
+                'uri varchar(36))',
+            (err) => {
+                if (err) return rej(err);
+
+                console.log('artists table exists');
+                acc();
+            },
+        );
+    });
+
+    const tracks = new Promise((acc, rej) => {
+        pool.query(
+            'CREATE TABLE IF NOT EXISTS tracks (' +
+                'track_id varchar(36), ' +
+                'track_name varchar(72), ' +
+                'external_urls varchar(255), ' +
+                'img_url varchar(255), ' +
+                'uri varchar(36), ' +
+                'explicit boolean)',
+            (err) => {
+                if (err) return rej(err);
+
+                console.log('tracks table exists');
+                acc();
+            },
+        );
+    });
+
+    const user_tracks = new Promise((acc, rej) => {
+        pool.query(
+            'CREATE TABLE IF NOT EXISTS user_tracks (' +
+                'user_id varchar(36), ' +
+                'track_id varchar(36))',
+            (err) => {
+                if (err) return rej(err);
+
+                console.log('user_tracks table exists');
+                acc();
+            },
+        );
+    });
+
+    const user_artists = new Promise((acc, rej) => {
+        pool.query(
+            'CREATE TABLE IF NOT EXISTS user_artists (' +
+                'user_id varchar(36), ' +
+                'artist_id varchar(36))',
+            (err) => {
+                if (err) return rej(err);
+
+                console.log('user_artists table exists');
+                acc();
+            },
+        );
+    });
+
+    return Promise.all([users, artists, tracks, user_tracks, user_artists]);
 }
 
 async function teardown() {
@@ -59,41 +129,37 @@ async function teardown() {
     });
 }
 
-async function getItems() {
+//
+
+async function getAllUsers() {
     return new Promise((acc, rej) => {
-        pool.query('SELECT * FROM todo_items', (err, rows) => {
+        pool.query('SELECT * FROM users', (err, rows) => {
             if (err) return rej(err);
-            acc(
-                rows.map((item) =>
-                    Object.assign({}, item, {
-                        completed: item.completed === 1,
-                    }),
-                ),
-            );
+            acc(rows.map((item) => Object.assign({}, item)));
         });
     });
 }
 
-async function getItem(id) {
+async function getUser(id) {
     return new Promise((acc, rej) => {
-        pool.query('SELECT * FROM todo_items WHERE id=?', [id], (err, rows) => {
+        pool.query('SELECT * FROM users WHERE user_id=?', [id], (err, rows) => {
             if (err) return rej(err);
-            acc(
-                rows.map((item) =>
-                    Object.assign({}, item, {
-                        completed: item.completed === 1,
-                    }),
-                )[0],
-            );
+            acc(rows.map((item) => Object.assign({}, item))[0]);
         });
     });
 }
 
-async function storeItem(item) {
+async function storeUser(user) {
     return new Promise((acc, rej) => {
         pool.query(
-            'INSERT INTO todo_items (id, name, completed) VALUES (?, ?, ?)',
-            [item.id, item.name, item.completed ? 1 : 0],
+            'INSERT INTO users (user_id, display_name, external_urls, img_url, uri) VALUES (?, ?, ?, ?, ?)',
+            [
+                user.account_id,
+                user.display_name,
+                user.external_urls.spotify,
+                user.images[0].url,
+                user.uri,
+            ],
             (err) => {
                 if (err) return rej(err);
                 acc();
@@ -102,11 +168,30 @@ async function storeItem(item) {
     });
 }
 
-async function updateItem(id, item) {
+async function getArtist(id) {
     return new Promise((acc, rej) => {
         pool.query(
-            'UPDATE todo_items SET name=?, completed=? WHERE id=?',
-            [item.name, item.completed ? 1 : 0, id],
+            'SELECT * FROM artists WHERE artist_id=?',
+            [id],
+            (err, rows) => {
+                if (err) return rej(err);
+                acc(rows.map((item) => Object.assign({}, item))[0]);
+            },
+        );
+    });
+}
+
+async function storeArtist(artist) {
+    return new Promise((acc, rej) => {
+        pool.query(
+            'INSERT INTO artists (artist_id, artist_name, external_urls, img_url, uri) VALUES (?, ?, ?, ?, ?)',
+            [
+                artist.id,
+                artist.name,
+                artist.external_urls.spotify,
+                artist.images[0].url,
+                artist.uri,
+            ],
             (err) => {
                 if (err) return rej(err);
                 acc();
@@ -115,21 +200,135 @@ async function updateItem(id, item) {
     });
 }
 
-async function removeItem(id) {
+async function storeArtists(artists) {
+    let valuesString = artists
+        .map((artist) => {
+            return (
+                '(' +
+                [
+                    artist.id,
+                    artist.name,
+                    artist.external_urls.spotify,
+                    artist.images[0].url,
+                    artist.uri,
+                ].join(', ') +
+                ')'
+            );
+        })
+        .join(', ');
+
     return new Promise((acc, rej) => {
-        pool.query('DELETE FROM todo_items WHERE id = ?', [id], (err) => {
-            if (err) return rej(err);
-            acc();
-        });
+        pool.query(
+            `INSERT INTO artists (artist_id, artist_name, external_urls, img_url, uri) VALUES ${valuesString}`,
+            (err) => {
+                if (err) return rej(err);
+                acc();
+            },
+        );
     });
 }
+
+async function storeTracks(tracks) {
+    let valuesString = tracks
+        .map((track) => {
+            return (
+                '(' +
+                [
+                    track.id,
+                    track.name,
+                    track.external_urls.spotify,
+                    track.images[0].url,
+                    track.uri,
+                    track.explicit,
+                ].join(', ') +
+                ')'
+            );
+        })
+        .join(', ');
+
+    return new Promise((acc, rej) => {
+        pool.query(
+            `INSERT INTO tracks (track_id, track_name, external_urls, img_url, uri, explicit) VALUES ${valuesString}`,
+            (err) => {
+                if (err) return rej(err);
+                acc();
+            },
+        );
+    });
+}
+
+async function storeUserTracks(user, tracks) {
+    let valuesString = tracks
+        .map((track) => {
+            return '(' + [user.account_id, track.id].join(', ') + ')';
+        })
+        .join(', ');
+
+    return new Promise((acc, rej) => {
+        pool.query(
+            `INSERT INTO user_tracks (user_id, track_id) VALUES ${valuesString}`,
+            (err) => {
+                if (err) return rej(err);
+                acc();
+            },
+        );
+    });
+}
+
+async function getUserTracks(user) {
+    pool.query(
+        'SELECT * FROM user_tracks INNER JOIN tracks ON user_tracks.track_id = tracks.track_id WHERE user_id=?',
+        [user.account_id],
+        (err, rows) => {
+            if (err) return rej(err);
+            acc(rows.map((item) => Object.assign({}, item)));
+        },
+    );
+}
+
+async function storeUserArtists(user, artists) {
+    let valuesString = artists
+        .map((artist) => {
+            return '(' + [user.account_id, artist.id].join(', ') + ')';
+        })
+        .join(', ');
+
+    return new Promise((acc, rej) => {
+        pool.query(
+            `INSERT INTO user_artists (user_id, artist_id) VALUES ${valuesString}`,
+            (err) => {
+                if (err) return rej(err);
+                acc();
+            },
+        );
+    });
+}
+
+async function getUserArtists(user) {
+    pool.query(
+        'SELECT * FROM user_artists INNER JOIN artists ON user_artists.artist_id = artists.artist_id WHERE user_id=?',
+        [user.account_id],
+        (err, rows) => {
+            if (err) return rej(err);
+            acc(rows.map((item) => Object.assign({}, item)));
+        },
+    );
+}
+
+//
 
 module.exports = {
     init,
     teardown,
-    getItems,
-    getItem,
-    storeItem,
-    updateItem,
-    removeItem,
+    getAllUsers,
+    getUser,
+    storeUser,
+    getArtist,
+    storeArtist,
+    storeArtists,
+    storeTracks,
+    storeUserTracks,
+    getUserTracks,
+    storeUserArtists,
+    getUserArtists,
 };

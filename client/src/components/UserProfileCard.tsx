@@ -6,22 +6,11 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/esm/Col';
 import Image from 'react-bootstrap/Image';
 
-export function UserProfileCard({ token }: { token: string }) {
-    const [profile, setProfile] = useState<ProfileObject | null>(null);
-
-    useEffect(() => {
-        if (token && !profile) {
-            fetch('https://api.spotify.com/v1/me', {
-                method: 'GET',
-                headers: { Authorization: `Bearer ${token}` },
-            })
-                .then((r) => r.json())
-                .then(setProfile);
-        }
-    }, [token]);
-
-    //if (items === null) return 'Loading...';
-
+export function UserProfileCard({
+    profile,
+}: {
+    profile: ProfileObject | null;
+}) {
     return (
         <Card>
             <Card.Body>

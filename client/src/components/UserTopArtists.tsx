@@ -18,27 +18,7 @@ function ArtistCard({ artist }: { artist: ArtistObject }) {
     );
 }
 
-export function UserTopArtists({ token }: { token: string }) {
-    const [artistList, setArtistList] = useState<ArtistObject[] | null>(null);
-
-    useEffect(() => {
-        if (token && !artistList) {
-            fetch(
-                'https://api.spotify.com/v1/me/top/artists?time_range=long_term&limit=50',
-                {
-                    method: 'GET',
-                    headers: { Authorization: `Bearer ${token}` },
-                },
-            )
-                .then((r) => r.json())
-                .then((res) => {
-                    setArtistList(res.items);
-                });
-        }
-    }, [token]);
-
-    //if (items === null) return 'Loading...';
-
+export function UserTopArtists({ artistList }: { artistList: ArtistObject[] }) {
     return (
         <Row xs={2} md={5}>
             {artistList ? (

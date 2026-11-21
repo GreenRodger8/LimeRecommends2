@@ -40,27 +40,7 @@ function TrackCard({ track }: { track: TrackObject }) {
     );
 }
 
-export function UserTopTracks({ token }: { token: string }) {
-    const [trackList, setTrackList] = useState<TrackObject[] | null>(null);
-
-    useEffect(() => {
-        if (token && !trackList) {
-            fetch(
-                'https://api.spotify.com/v1/me/top/tracks?time_range=long_term&limit=50',
-                {
-                    method: 'GET',
-                    headers: { Authorization: `Bearer ${token}` },
-                },
-            )
-                .then((r) => r.json())
-                .then((res) => {
-                    setTrackList(res.items);
-                });
-        }
-    }, [token]);
-
-    //if (items === null) return 'Loading...';
-
+export function UserTopTracks({ trackList }: { trackList: TrackObject[] }) {
     return (
         <Row xs={2} md={3} xxl={5}>
             {trackList ? (
